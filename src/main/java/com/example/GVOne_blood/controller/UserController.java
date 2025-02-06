@@ -1,44 +1,83 @@
 package com.example.GVOne_blood.controller;
 
+import com.example.GVOne_blood.dto.reponse.ResponseData;
+import com.example.GVOne_blood.dto.reponse.ResponseError;
+import com.example.GVOne_blood.dto.reponse.ResponseSuccess;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/user")
+@Validated
 public class UserController {
-    @PostMapping( value = "/", headers = "apiKey = 1.0")
-    public String addUser() {
-        return "User added successfully";
+    @PostMapping( value = "/") // header  = "apiKey = 1.0"
+    public ResponseSuccess addUser(@Valid @RequestBody UserRequestDTO user) {
+
+        return new ResponseSuccess( HttpStatus.CREATED, "User added successful", 1);
     }
     // Muốn được validate thì phải thêm @Valid
+    // sử dụng ResponseStatus tự custom có nhược điểm là khó trả về message chuẩn cho các đội khác sử dụng API
+    // để khắc phục điều này, ta dùng @Operation để trả về message chuẩn
+    @Operation (summary = "Update user", description = "Update user by userId", responses = {
+            @ApiResponse(responseCode = "201", description = "User updated successfully",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                        examples = @ExampleObject (name = "User updated successfully", summary = "updated",
+                                        value = """
+                                                {
+                                                    "message": "User updated successfully",
+                                                    "status": 201
+                                                    "data": 1
+                                                }
+                                                """) )
+            ),
+    })
+    // và thay vì dùng @Operation với khai báo phức tạp như trên, ta chỉ cần khai báo 1 đối tượng kiểu generic <T>.
+    // Với đối tượng này, nó sẽ tự động mang theo các thông tin cần thiết như status, message, data
     @PutMapping("/{userId}")
-    public UserRequestDTO updateUser(@PathVariable String userId, @Valid @RequestBody UserRequestDTO userRequestDTO) {
-        System.out.println("Update user successfully");
-        return userRequestDTO;
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseSuccess updateUser( @Min(1) @PathVariable String userId ,
+    @Valid @RequestBody UserRequestDTO userRequestDTO) {
+        return new ResponseSuccess(HttpStatus.CREATED, "User updated successfully");
     }
+// Sử dụng ResponseData sẽ trả về đủ các thông tin cần thiết như status, message, data
     @PatchMapping("/{userId}")
-    public UserRequestDTO updateLimitedField(@PathVariable String userId, @RequestBody(required = false) int status) {
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseData<?> updateLimitedField(@Min(1) @PathVariable String userId, @RequestBody(required = false) int status) {
         System.out.println("Update user successfully with status = " + status);
-        return new UserRequestDTO("Join", "join123@gmail.com", "join123", "1234567890");
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User updated successfully");
+        // vì status kiểu int nên ta trả về value của HttpStatus để tránh lỗi
     }
+    // Tương tự ta trả về ResponseError với những API không chạy đúng
     @DeleteMapping("/{userId}")
-    public String deleteUser(@PathVariable(name = "userId") String id) {
-        return "User deleted successfully";
+   // @ResponseStatus (HttpStatus.NO_CONTENT)
+    public ResponseError deleteUser(@PathVariable(name = "userId") String id) {
+        return new ResponseError(HttpStatus.BAD_GATEWAY.value(), "User can't be deleted successfully");
+
     }
     @GetMapping("/detail/{userId}")
-    public UserRequestDTO getUserDetail(@PathVariable String userId) {
-        return new UserRequestDTO("My", "@gmail.com", "my234", "1234565432");
+    public ResponseSuccess getUserDetail(@PathVariable String userId) {
+        return new ResponseSuccess(HttpStatus.OK, "User detail",
+                new UserRequestDTO("My", "@gmail.com", "my234", "1234565432"));
     }
     @GetMapping("/list")
-    public List <UserRequestDTO> getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
+    @ResponseStatus (HttpStatus.OK)
+    public ResponseSuccess getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return List.of
+        return new ResponseSuccess(HttpStatus.OK, "List user ", List.of
                 (new UserRequestDTO("Join", "join123@gmail.com", "join123", "1234567890"),
-        new UserRequestDTO("My", "@gmail.com", "my234", "1234565432")    );
+        new UserRequestDTO("My", "@gmail.com", "my234", "1234565432"))    );
     }
 
 }
