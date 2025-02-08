@@ -1,4 +1,4 @@
-package com.example.GVOne_blood.dto.reponse;
+package com.example.GVOne_blood.dto.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;

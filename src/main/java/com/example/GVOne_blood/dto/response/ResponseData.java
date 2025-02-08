@@ -1,4 +1,4 @@
-package com.example.GVOne_blood.dto.reponse;
+package com.example.GVOne_blood.dto.response;
 
 public class ResponseData<T>  {
     private final int status;

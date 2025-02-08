@@ -1,8 +1,8 @@
 package com.example.GVOne_blood.controller;
 
-import com.example.GVOne_blood.dto.reponse.ResponseData;
-import com.example.GVOne_blood.dto.reponse.ResponseError;
-import com.example.GVOne_blood.dto.reponse.ResponseSuccess;
+import com.example.GVOne_blood.dto.response.ResponseData;
+import com.example.GVOne_blood.dto.response.ResponseError;
+import com.example.GVOne_blood.dto.response.ResponseSuccess;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
 import com.example.GVOne_blood.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
