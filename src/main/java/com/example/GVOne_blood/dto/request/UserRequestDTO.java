@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 public class UserRequestDTO implements Serializable {
-    @NotNull (message = "firstName must be not null")
+    @NotBlank (message = "firstName must be not blank")
     private String firstName;
     @NotNull(message = "lastName must be not null")
     private String lastName;

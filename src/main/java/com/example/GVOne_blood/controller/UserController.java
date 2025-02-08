@@ -4,6 +4,7 @@ import com.example.GVOne_blood.dto.reponse.ResponseData;
 import com.example.GVOne_blood.dto.reponse.ResponseError;
 import com.example.GVOne_blood.dto.reponse.ResponseSuccess;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
+import com.example.GVOne_blood.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -22,10 +24,20 @@ import java.util.List;
 @RequestMapping("/user")
 @Validated
 public class UserController {
-    @PostMapping( value = "/") // header  = "apiKey = 1.0"
-    public ResponseSuccess addUser(@Valid @RequestBody UserRequestDTO user) {
+    @Autowired
+    private UserService userService;
 
-        return new ResponseSuccess( HttpStatus.CREATED, "User added successful", 1);
+    @PostMapping( value = "/") // header  = "apiKey = 1.0"
+    public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO user) {
+        try {
+            userService.addUser(user);
+            return new ResponseData<>(HttpStatus.CREATED.value(), "User added successful", 1);
+            // muốn trả về phản hồi theo ý muốn ta sẽ try catch và trả về ResponseError
+        }
+        catch(Exception e) {
+
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "User can't be added");
+        }
     }
     // Muốn được validate thì phải thêm @Valid
     // sử dụng ResponseStatus tự custom có nhược điểm là khó trả về message chuẩn cho các đội khác sử dụng API
