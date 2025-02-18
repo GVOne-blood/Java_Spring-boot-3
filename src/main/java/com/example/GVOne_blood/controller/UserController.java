@@ -74,15 +74,24 @@ public class UserController {
     // Tương tự ta trả về ResponseError với những API không chạy đúng
     @DeleteMapping("/{userId}")
    // @ResponseStatus (HttpStatus.NO_CONTENT)
-    public ResponseError deleteUser(@PathVariable(name = "userId") String id) {
-        return new ResponseError(HttpStatus.BAD_GATEWAY.value(), "User can't be deleted successfully");
-
+    public ResponseData<?> deleteUser(@PathVariable(name = "userId") String id) {
+        try {
+            return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "User deleted successfully", 1);
+        }
+        catch(Exception e) {
+            return new ResponseError(HttpStatus.BAD_GATEWAY.value(), "User can't be deleted successfully");
+        }
     }
     @GetMapping("/detail/{userId}")
-    public ResponseSuccess getUserDetail(@PathVariable String userId) {
-        return new ResponseSuccess(HttpStatus.OK, "User detail",
+    public ResponseData<?> getUserDetail(@PathVariable String userId) {
+        try{
+        return new ResponseData<>(HttpStatus.OK.value(), "User detail",
                 new UserRequestDTO("My", "@gmail.com", "my234", "1234565432"));
     }
+        catch(Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "User not found");
+        }
+        }
     @GetMapping("/list")
     @ResponseStatus (HttpStatus.OK)
     public ResponseSuccess getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
