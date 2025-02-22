@@ -1,5 +1,8 @@
 package com.example.GVOne_blood.dto.response;
 
+import lombok.Getter;
+
+@Getter
 public class ResponseData<T>  {
     private final int status;
     private final String message;
@@ -16,15 +19,4 @@ public class ResponseData<T>  {
         this.message = message;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public T getData() {
-        return data;
-    }
 }

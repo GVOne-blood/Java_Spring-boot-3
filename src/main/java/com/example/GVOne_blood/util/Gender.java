@@ -1,5 +1,12 @@
 package com.example.GVOne_blood.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum Gender {
-    MALE, FEMALE, OTHER
+    @JsonProperty("male")
+    MALE,
+    @JsonProperty("female")
+    FEMALE,
+    @JsonProperty("other")
+    OTHER
 }

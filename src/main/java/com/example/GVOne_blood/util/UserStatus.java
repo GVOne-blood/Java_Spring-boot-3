@@ -1,5 +1,12 @@
 package com.example.GVOne_blood.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum UserStatus {
-    ACTIVE, INACTIVE, NONE
+    @JsonProperty("active")
+    ACTIVE,
+    @JsonProperty("inactive")
+    INACTIVE,
+    @JsonProperty("none")
+    NONE
 }

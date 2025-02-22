@@ -11,7 +11,7 @@ public interface UserService {
 
     long saveUser(UserRequestDTO userRequestDTO);
 
-    void updateUser(UserRequestDTO userRequestDTO);
+    void updateUser(Long id, UserRequestDTO userRequestDTO);
 
     void deleteUser(long id);
 
@@ -19,5 +19,5 @@ public interface UserService {
 
     ResponseUserDetail getUserDetail(Long userId);
 
-    List <UserRequestDTO> getListUser(int pageNo, int pageSize);
+    List <ResponseUserDetail> getListUser(int pageNo, int pageSize);
 }

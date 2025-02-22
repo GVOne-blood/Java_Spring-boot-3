@@ -5,13 +5,13 @@ import lombok.*;
 
 
 @Entity(name = "tbl_address")
-
+@Table(name = "tbl_address")
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Address  {
+public class Address extends AbstractEntity  {
 
     @Column(name = "apartment_number")
     private String apartmentNumber;
@@ -40,7 +40,7 @@ public class Address  {
 //    @Column(name = "user_id")
 //    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id")
     private User user;
 }

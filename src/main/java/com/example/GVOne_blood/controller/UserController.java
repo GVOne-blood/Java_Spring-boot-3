@@ -5,6 +5,7 @@ import com.example.GVOne_blood.dto.response.ResponseError;
 import com.example.GVOne_blood.dto.response.ResponseSuccess;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
 import com.example.GVOne_blood.service.UserService;
+import com.example.GVOne_blood.util.UserStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,21 +25,23 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @Validated
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
+
+    private final UserService userService;
 
     @PostMapping( value = "/") // header  = "apiKey = 1.0"
-    public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO user) {
+    public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO user) {
         try {
-            userService.addUser(user);
-            return new ResponseData<>(HttpStatus.CREATED.value(), "User added successful", 1);
+            long userId = userService.saveUser(user);
+            return new ResponseData<Long>(HttpStatus.CREATED.value(), "User added successful", userId);
             // muốn trả về phản hồi theo ý muốn ta sẽ try catch và trả về ResponseError
         }
         catch(Exception e) {
-
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "User can't be added");
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage(), user);
         }
+
+
     }
     // Muốn được validate thì phải thêm @Valid
     // sử dụng ResponseStatus tự custom có nhược điểm là khó trả về message chuẩn cho các đội khác sử dụng API
@@ -59,17 +63,27 @@ public class UserController {
     // Với đối tượng này, nó sẽ tự động mang theo các thông tin cần thiết như status, message, data
     @PutMapping("/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseSuccess updateUser( @Min(1) @PathVariable String userId ,
+    public ResponseData<?> updateUser( @Min(1) @PathVariable Long userId ,
     @Valid @RequestBody UserRequestDTO userRequestDTO) {
-        return new ResponseSuccess(HttpStatus.CREATED, "User updated successfully");
+        try {
+            userService.updateUser(userId, userRequestDTO);
+            return new ResponseData<>(HttpStatus.OK.value(), "User updated successfully", userId);
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
     }
 // Sử dụng ResponseData sẽ trả về đủ các thông tin cần thiết như status, message, data
     @PatchMapping("/{userId}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseData<?> updateLimitedField(@Min(1) @PathVariable String userId, @RequestBody(required = false) int status) {
-        System.out.println("Update user successfully with status = " + status);
-        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User updated successfully");
-        // vì status kiểu int nên ta trả về value của HttpStatus để tránh lỗi
+    public ResponseData<?> changeStatus(@Min(1) @PathVariable Long userId, @RequestParam(required = false) UserStatus status) {
+        try {
+            userService.changeStatus(userId, status);
+            return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User updated successfully");
+            // vì status kiểu int nên ta trả về value của HttpStatus để tránh lỗi
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
     }
     // Tương tự ta trả về ResponseError với những API không chạy đúng
     @DeleteMapping("/{userId}")
@@ -79,26 +93,30 @@ public class UserController {
             return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "User deleted successfully", 1);
         }
         catch(Exception e) {
-            return new ResponseError(HttpStatus.BAD_GATEWAY.value(), "User can't be deleted successfully");
+           return new ResponseError(HttpStatus.BAD_GATEWAY.value(), "User can't be deleted successfully");
+
         }
     }
     @GetMapping("/detail/{userId}")
-    public ResponseData<?> getUserDetail(@PathVariable String userId) {
+    public ResponseData<?> getUserDetail(@PathVariable Long userId) {
         try{
         return new ResponseData<>(HttpStatus.OK.value(), "User detail",
-                new UserRequestDTO("My", "@gmail.com", "my234", "1234565432"));
+                userService.getUserDetail(userId));
     }
         catch(Exception e){
-            return new ResponseError(HttpStatus.BAD_REQUEST.value(), "User not found");
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
         }
     @GetMapping("/list")
-    @ResponseStatus (HttpStatus.OK)
-    public ResponseSuccess getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
+    public ResponseData<?> getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
             @RequestParam(defaultValue = "10") int pageSize) {
-        return new ResponseSuccess(HttpStatus.OK, "List user ", List.of
-                (new UserRequestDTO("Join", "join123@gmail.com", "join123", "1234567890"),
-        new UserRequestDTO("My", "@gmail.com", "my234", "1234565432"))    );
+        try{
+            return new ResponseData<>(HttpStatus.OK.value(), "Get list user successfully", userService.getListUser(pageNo, pageSize));
+        }
+
+        catch(Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
     }
 
 }

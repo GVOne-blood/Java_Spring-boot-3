@@ -19,6 +19,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table (name = "tbl_user")
 public class User extends AbstractEntity{
 
     @Column(name = "first_name")
@@ -32,7 +33,7 @@ public class User extends AbstractEntity{
     private Date dateOfBirth;
 
     @Enumerated(EnumType.STRING) // EnumType.ORDINAL: lưu giá trị của enum theo index, EnumType.STRING: lưu giá trị của enum theo tên, convert thành enum trong DB
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Dùng để lưu enum theo tên
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Dùng để lưu enum theo tên
     @Column(name = "gender")
     private Gender gender;
 
@@ -49,16 +50,16 @@ public class User extends AbstractEntity{
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status")
     private UserStatus status;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+//    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "type")
     private UserType type;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Address> addresses = new HashSet<>();
 
     public void saveAddress(Address address){

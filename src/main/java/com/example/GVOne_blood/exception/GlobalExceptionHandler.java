@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
             message = message.substring(message.lastIndexOf('[') + 1, message.lastIndexOf(']'));}
             else if (e instanceof HttpMessageNotReadableException) {
                 message = "Only accept the following values : " +
-                        message.substring(message.indexOf('[') + 1, message.indexOf(']') - 1);}
+                        message.substring(message.indexOf('[') + 1, message.indexOf(']'));}
             errorResponse.setMessage(message); // lấy ra lỗi ở dạng text
             errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase()); // lấy ra lỗi ở dạng text (bad-request)
             errorResponse.setTimestamp( new Date());

@@ -42,18 +42,19 @@ public class UserRequestDTO implements Serializable {
     // pattern không validate được kiểu enum
     //private UserStatus userStatus;
     //private String userStatus;
-    @EnumPattern(name = "userStatus", regexp = "ACTIVE|INACTIVE|NONE")
-    private UserStatus userStatus;
+    @EnumPattern(name = "status", regexp = "ACTIVE|INACTIVE|NONE")
+    private UserStatus status;
 
     @EnumPattern(name = "gender", regexp = "MALE|FEMALE|OTHER")
     private Gender gender;
 
-    @EnumPattern(name = "userType", regexp = " DONOR|RECIPIENT|ADMIN")
-    private UserType userType;
+    @EnumPattern(name = "type", regexp = " OWNER|USER|ADMIN")
+    private UserType type;
 //    @NotEmpty
 //    private List<String> permissions;
     @NotEmpty (message = "Address is not empty")
     Set<AddressDTO> addresses ;
+
     public UserRequestDTO() {
     }
     public UserRequestDTO(String name, String email, String passWord, String phone) {

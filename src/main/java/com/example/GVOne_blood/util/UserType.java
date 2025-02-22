@@ -1,5 +1,12 @@
 package com.example.GVOne_blood.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public enum UserType {
-    DONOR, RECIPIENT, ADMIN
+    @JsonProperty("owner")
+    OWNER,
+    @JsonProperty("user")
+    USER,
+    @JsonProperty("admin")
+    ADMIN
 }
