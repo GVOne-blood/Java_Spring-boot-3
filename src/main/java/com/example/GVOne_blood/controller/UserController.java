@@ -1,9 +1,8 @@
 package com.example.GVOne_blood.controller;
 
-import com.example.GVOne_blood.dto.response.ResponseData;
-import com.example.GVOne_blood.dto.response.ResponseError;
-import com.example.GVOne_blood.dto.response.ResponseSuccess;
+import com.example.GVOne_blood.dto.response.*;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
+import com.example.GVOne_blood.repository.SearchRepository;
 import com.example.GVOne_blood.service.UserService;
 import com.example.GVOne_blood.util.UserStatus;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +28,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final SearchRepository searchRepository;
 
     @PostMapping( value = "/") // header  = "apiKey = 1.0"
     public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO user) {
@@ -40,8 +40,6 @@ public class UserController {
         catch(Exception e) {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage(), user);
         }
-
-
     }
     // Muốn được validate thì phải thêm @Valid
     // sử dụng ResponseStatus tự custom có nhược điểm là khó trả về message chuẩn cho các đội khác sử dụng API
@@ -109,12 +107,41 @@ public class UserController {
         }
     @GetMapping("/list")
     public ResponseData<?> getListUser( @RequestParam(defaultValue = "1") @Max(10) int pageNo,
-            @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestParam(defaultValue = "10") int pageSize,
+                                        @RequestParam(required = false) String sortBy) {
         try{
-            return new ResponseData<>(HttpStatus.OK.value(), "Get list user successfully", userService.getListUser(pageNo, pageSize));
+            return new ResponseData<>(HttpStatus.OK.value(), "Get list user successfully", userService.getListUser(pageNo, pageSize, sortBy));
         }
-
         catch(Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+    @Operation (summary = "Get list of users with sorting fields by asc or desc",
+            description = "Sent a request via thi API (contains pageNo, pageSize and a String has a format like:" +
+                    " <field_name1>:<sort_direction>, <field_name2>:<sort_direction>)")
+    @GetMapping("/list-sorted-by-multiple-columns")
+    public ResponseData<?> userFilter(@Max(10) @RequestParam( defaultValue = "1", required = false) int pageNo,
+                                                             @RequestParam( defaultValue = "20", required = false) int pageSize,
+                                                             @RequestParam(required = false) String... sortBy){
+        try {
+        return new ResponseData<>(HttpStatus.OK.value(), "get list user by multy sorted columns successfully",
+                userService.getListUserBySortingFields(pageNo, pageSize, sortBy));
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+    @GetMapping("/list-sorted-by-column-and-search")
+    public ResponseData<?> userSingleSortAndSearch(@Max(10) @RequestParam( defaultValue = "1", required = false) int pageNo,
+                                                   @RequestParam( defaultValue = "20", required = false) int pageSize,
+                                                   @RequestParam(required = false) String sortBy,
+                                                   @RequestParam(required = false) String search){
+        try{
+            return new ResponseData<>(HttpStatus.OK.value(), "searching successfully",
+                    searchRepository.getAllUsersWithSortColumnAndSearch(pageNo, pageSize, sortBy, search));
+        }
+        catch (Exception e){
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
     }

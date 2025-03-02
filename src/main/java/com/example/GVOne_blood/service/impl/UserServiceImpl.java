@@ -2,6 +2,7 @@ package com.example.GVOne_blood.service.impl;
 
 import com.example.GVOne_blood.dto.request.AddressDTO;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
+import com.example.GVOne_blood.dto.response.PageResponse;
 import com.example.GVOne_blood.dto.response.ResponseUserDetail;
 import com.example.GVOne_blood.exception.custom.SourceNotFoundException;
 import com.example.GVOne_blood.model.Address;
@@ -14,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 
@@ -131,17 +135,66 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<ResponseUserDetail> getListUser(int pageNo, int pageSize) {
-        Pageable pageable  = PageRequest.of(pageNo - 1, pageSize); //thiết lập phân trang bằng đối trượng pageable của spring
-        //vì phần trang của spring tính từ 0, nên muốn đánh số trang theo stt thì phải chỉnh pageNo
+    public PageResponse<?> getListUser(int pageNo, int pageSize, String sortBy) {
+        List <Sort.Order> sortDirection = new ArrayList<>();
+//        Pageable pageable  = PageRequest.of(pageNo - 1, pageSize); //thiết lập phân trang bằng đối trượng pageable của spring
+//        //vì phần trang của spring tính từ 0, nên muốn đánh số trang theo stt thì phải chỉnh pageNo
+
+        // muốn sort data theo 1 trường dữ liệu từ client trả về, ta có 1 overload của PageRequest.of()
+        // với data có dạng field:direction, ta dùng match và pattern để tách
+        Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+        Matcher matcher = pattern.matcher(sortBy);
+        if (matcher.find()){
+            if (matcher.group(3).equalsIgnoreCase("asc")) sortDirection.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+        }
+        else sortDirection.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection)); //sort  trường dũ liệy sortBy
         Page<User> users = userRepository.findAll(pageable);  // lấy ra danh sách user theo phân trang
 
-        return users.stream().map(a -> ResponseUserDetail.builder() //chuyển đổi từ User sang ResponseUserDetail
-                .firstName(a.getFirstName())
-                .lastName(a.getLastName())
-                .phone(a.getPhone())
-                .email(a.getEmail())
+        List <ResponseUserDetail> response =  users.stream().map(u -> ResponseUserDetail.builder()
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .phone(u.getPhone())
+                .email(u.getEmail())
                 .build()).toList();
+        return PageResponse.builder()
+                .pageSize(pageSize)
+                .pageNo(pageNo)
+                .totalPage(users.getTotalPages())
+                .items(response)
+                .build();
+    }
+
+    @Override
+    public PageResponse<?> getListUserBySortingFields(int pageNo, int pageSize, String... sortBy) {
+        int page = 0;
+        if (pageNo > 0) page = pageNo - 1;
+        List <ResponseUserDetail> listUser = new ArrayList<>();
+        List <Sort.Order> sortDirection = new ArrayList<>();
+        for (String field : sortBy){
+            Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+            Matcher matcher = pattern.matcher(field);
+        if (matcher.find()){
+            if (matcher.group(3).equalsIgnoreCase("asc"))
+                sortDirection.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+        }
+        else sortDirection.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+        }
+        Pageable pageable = PageRequest.of(page, pageSize,Sort.by(sortDirection)); //sort theo ds field
+        Page<User> users = userRepository.findAll(pageable);
+
+        List <ResponseUserDetail> response =  users.stream().map(u -> ResponseUserDetail.builder()
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .phone(u.getPhone())
+                .email(u.getEmail())
+                .build()).toList();
+        return PageResponse.builder()
+                .pageSize(pageSize)
+                .pageNo(pageNo)
+                .totalPage(users.getTotalPages())
+                .items(response)
+                .build();
     }
 
     public Set<Address> convertToAddress(Set<AddressDTO> addresses){

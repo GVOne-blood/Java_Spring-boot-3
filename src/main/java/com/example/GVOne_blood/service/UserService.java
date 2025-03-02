@@ -1,6 +1,7 @@
 package com.example.GVOne_blood.service;
 
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
+import com.example.GVOne_blood.dto.response.PageResponse;
 import com.example.GVOne_blood.dto.response.ResponseUserDetail;
 import com.example.GVOne_blood.util.UserStatus;
 
@@ -19,5 +20,8 @@ public interface UserService {
 
     ResponseUserDetail getUserDetail(Long userId);
 
-    List <ResponseUserDetail> getListUser(int pageNo, int pageSize);
+    // đối với các API về phân trang, ta trả về 1 đối tượng PageResponse để cung cấp cho FE thông tin cần thiết như số lượng record, các record trong 1 page
+    PageResponse<?> getListUser(int pageNo, int pageSize, String sortBy);
+
+   PageResponse<?> getListUserBySortingFields(int pageNo, int pageSize, String... sortBy);
 }
