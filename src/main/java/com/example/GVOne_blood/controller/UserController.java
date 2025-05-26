@@ -12,13 +12,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -30,6 +33,28 @@ public class UserController {
     private final UserService userService;
     private final SearchRepository searchRepository;
 
+
+    @GetMapping("/filter/{firstName},{lastName}")
+    public ResponseData<?> findByLastNameAndFirstName(@PathVariable("firstName") String firstName,
+                                                      @PathVariable("lastName") String lastName) {
+        try {
+            return new ResponseData<>(HttpStatus.OK.value(), "Get user by last name and first name successfully",
+                    userService.findUserByFirstNameAndLastName(firstName, lastName));
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+    @GetMapping("/filter/{date-of-birth}")
+    public ResponseData<?> findUserByDateOfBirthBefore(@PathVariable("date-of-birth")@DateTimeFormat(pattern = "yyyy-MM-dd") Date dateOfBirth){
+        try {
+            return new ResponseData<>(HttpStatus.OK.value(), "completed",
+                    userService.findUserByDateOfBirthBefore(dateOfBirth));
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
     @PostMapping( value = "/") // header  = "apiKey = 1.0"
     public ResponseData<Long> addUser(@Valid @RequestBody UserRequestDTO user) {
         try {
@@ -140,6 +165,22 @@ public class UserController {
         try{
             return new ResponseData<>(HttpStatus.OK.value(), "searching successfully",
                     searchRepository.getAllUsersWithSortColumnAndSearch(pageNo, pageSize, sortBy, search));
+        }
+        catch (Exception e){
+            return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/advance-search")
+    @Operation(summary = "Search nang cao theo Criteria Queries")
+    public ResponseData<?> advanceSearchByCriteria(@Max(10) @RequestParam( defaultValue = "1", required = false) int pageNo,
+                                                   @RequestParam( defaultValue = "20", required = false) int pageSize,
+                                                   @RequestParam(required = false) String sortBy,
+                                                   @RequestParam(required = false) String... search){
+        try{
+            return new ResponseData<>(HttpStatus.OK.value(), "searching successfully",
+                    searchRepository.advanceSearchByCriteria(pageNo, pageSize, sortBy, search));
         }
         catch (Exception e){
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());

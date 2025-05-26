@@ -26,10 +26,10 @@ public class UserRequestDTO implements Serializable {
     private String lastName;
     @Email(message = "email must be not blank")
     private String email;
-    @NotBlank (message = "userName must be not blank")
-    private String userName;
+    @NotBlank (message = "username must be not blank")
+    private String username;
     @NotBlank
-    private String passWord;
+    private String password;
     //@Pattern(regexp = "^//d{10}$", message = "Phone number format exception")
     @PhoneNumber // Custom annotation
     private String phone;
@@ -57,10 +57,10 @@ public class UserRequestDTO implements Serializable {
 
     public UserRequestDTO() {
     }
-    public UserRequestDTO(String name, String email, String passWord, String phone) {
+    public UserRequestDTO(String name, String email, String password, String phone) {
         this.lastName = name;
         this.email = email;
-        this.passWord = passWord;
+        this.password = password;
         this.phone = phone;
     }
 

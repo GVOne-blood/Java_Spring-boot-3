@@ -1,31 +1,16 @@
-spring:
-  config:
-    activate:
-      on-profile: dev
-    datasource:
-      url: ${SPRING_DATASOURCE_URL}
-      username: ${SPRING_DATASOURCE_USERNAME}
-      password: ${SPRING_DATASOURCE_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
-    jpa:
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQL8Dialect
-          format_sql: true
-          use_sql_comments: true
-          show_sql: true
-      hibernate:
-        ddl-auto: update
-  springdoc:
-    openapi:
-      api-docs:
-        enabled: true
-      swagger-ui:
-        enabled: true
-  openapi:
-    server:
-      api-docs-url: /v3/api-docs
-      server : http://localhost:${server.port}
-      title : API document
-      description : API document for springboot
-      version : 1.0.0
+server:
+  port: 8080 # Cổng mặc định
+#logging:
+#  level:
+#    # Log chi tiết từ Hibernate cốt lõi
+#    org.hibernate: DEBUG
+#    # Log đặc biệt quan trọng cho việc quản lý schema (DDL)
+#    org.hibernate.tool.schema: DEBUG
+#    # Log về việc xây dựng mô hình entity
+#    org.hibernate.metamodel: DEBUG
+#    # Log từ tầng cấu hình tự động JPA của Spring Boot
+#    org.springframework.boot.autoconfigure.orm.jpa: DEBUG
+#    # Log từ tầng ORM JPA của Spring
+#    org.springframework.orm.jpa: DEBUG
+#    # (Tùy chọn, có thể hữu ích) Log về việc tạo bean
+#    # org.springframework.beans.factory: DEBUG

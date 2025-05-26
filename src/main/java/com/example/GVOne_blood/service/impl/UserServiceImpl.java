@@ -9,29 +9,53 @@ import com.example.GVOne_blood.model.Address;
 import com.example.GVOne_blood.model.User;
 import com.example.GVOne_blood.repository.UserRepository;
 import com.example.GVOne_blood.service.UserService;
+import com.example.GVOne_blood.util.PasswordEncoderUtil;
 import com.example.GVOne_blood.util.UserStatus;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-
+@Slf4j
 @RequiredArgsConstructor // annotation của lombook sẽ tiêm constructor vào các field final thay cho @Autowired
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    @Override
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Override
+    public UserDetailsService userDetailsService() {
+
+      return new UserDetailsService() {
+          @Override
+          public UserDetails loadUserByUsername(String username) {
+              User user = userRepository.findByUsername(username)
+                      .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                // kiểm tra mật khẩu
+
+              log.info("Loaded user: {}", user.getUsername());
+              log.info("Password from DB: {}", user.getPassword());
+              return user;
+          }
+      };
+    }
 
     @Override
     public void addUser(UserRequestDTO userRequestDTO) {
@@ -47,8 +71,8 @@ public class UserServiceImpl implements UserService {
                 .email(userRequestDTO.getEmail())
                 .dateOfBirth(userRequestDTO.getDateOfBirth())
                 .gender(userRequestDTO.getGender())
-                .userName(userRequestDTO.getUserName())
-                .passWord(userRequestDTO.getPassWord())
+                .username(userRequestDTO.getUsername())
+                .password(userRequestDTO.getPassword())
                 .type(userRequestDTO.getType())
                 .status(userRequestDTO.getStatus())
 //                .addresses(convertToAddress(userRequestDTO.getAddresses()))
@@ -76,8 +100,8 @@ public class UserServiceImpl implements UserService {
         User user = getUserById(userId);
         //với các trường dữ liệu đã validate nhưng vẫn chưa vét hết trường hợp, ta cần check trong service
         //VD
-        if (StringUtils.hasLength(userRequestDTO.getUserName()))
-            user.setUserName(userRequestDTO.getUserName());
+        if (StringUtils.hasLength(userRequestDTO.getUsername()))
+            user.setUsername(userRequestDTO.getUsername());
         if (!userRequestDTO.getEmail().equals(user.getEmail()))
             user.setEmail(userRequestDTO.getEmail());
         userRequestDTO.getAddresses().forEach(a ->
@@ -95,8 +119,8 @@ public class UserServiceImpl implements UserService {
 
         user.setGender(userRequestDTO.getGender());
         user.setType(userRequestDTO.getType());
-        user.setUserName(userRequestDTO.getUserName());
-        user.setPassWord(userRequestDTO.getPassWord());
+        user.setUsername(userRequestDTO.getUsername());
+        user.setPassword(userRequestDTO.getPassword());
         user.setDateOfBirth(userRequestDTO.getDateOfBirth());
         user.setFirstName(userRequestDTO.getFirstName());
         user.setLastName(userRequestDTO.getLastName());
@@ -145,12 +169,12 @@ public class UserServiceImpl implements UserService {
         Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
         Matcher matcher = pattern.matcher(sortBy);
         if (matcher.find()){
-            if (matcher.group(3).equalsIgnoreCase("asc")) sortDirection.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+            if (matcher.group(3).equalsIgnoreCase("asc"))
+                sortDirection.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
         }
         else sortDirection.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(sortDirection)); //sort  trường dũ liệy sortBy
         Page<User> users = userRepository.findAll(pageable);  // lấy ra danh sách user theo phân trang
-
         List <ResponseUserDetail> response =  users.stream().map(u -> ResponseUserDetail.builder()
                 .firstName(u.getFirstName())
                 .lastName(u.getLastName())
@@ -197,9 +221,23 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public PageResponse<?> advanceSearchByCriteria(int pageNo, int pageSize, String sortBy, String... search) {
+        return null;
+    }
+
+    @Override
+    public List<User> findUserByFirstNameAndLastName(String firstName, String lastName) {
+        return userRepository.findUserByFirstNameAndLastName(firstName, lastName);
+    }
+
+    @Override
+    public List<User> findUserByDateOfBirthBefore(Date dateOfBirth) {
+        return userRepository.findUserByDateOfBirthBefore(dateOfBirth);
+    }
+
     public Set<Address> convertToAddress(Set<AddressDTO> addresses){
         Set<Address> result = new HashSet<>();
-
         addresses.forEach(a ->
                 result.add(Address.builder()
                                 .addressType(a.getAddressType())
@@ -217,6 +255,15 @@ public class UserServiceImpl implements UserService {
     private User getUserById(Long userId){
         return userRepository.findById(userId).orElseThrow(() -> new SourceNotFoundException("User not found") );
     }
-
+    @Override
+    public void encodePassword(){
+        // mã hóa mật khẩu
+        List<User> users = userRepository.findAll();
+        // userRepository.deleteAll();
+        for (User user : users){
+            user.setPassword(PasswordEncoderUtil.encode(user.getPassword()));
+        }
+        userRepository.saveAll(users);
+    }
 
 }

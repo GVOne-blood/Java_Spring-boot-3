@@ -3,12 +3,21 @@ package com.example.GVOne_blood.service;
 import com.example.GVOne_blood.dto.request.UserRequestDTO;
 import com.example.GVOne_blood.dto.response.PageResponse;
 import com.example.GVOne_blood.dto.response.ResponseUserDetail;
+import com.example.GVOne_blood.model.User;
 import com.example.GVOne_blood.util.UserStatus;
+import org.hibernate.query.Page;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
+import java.util.Date;
 import java.util.List;
 
 public interface UserService {
-    public void addUser(UserRequestDTO userRequestDTO);
+
+    User getByUsername(String username);
+
+    UserDetailsService userDetailsService();
+
+    void addUser(UserRequestDTO userRequestDTO);
 
     long saveUser(UserRequestDTO userRequestDTO);
 
@@ -24,4 +33,12 @@ public interface UserService {
     PageResponse<?> getListUser(int pageNo, int pageSize, String sortBy);
 
    PageResponse<?> getListUserBySortingFields(int pageNo, int pageSize, String... sortBy);
+
+   PageResponse<?> advanceSearchByCriteria(int pageNo, int pageSize, String sortBy, String... search);
+
+    List<User> findUserByFirstNameAndLastName(String firstName, String lastName);
+
+    List<User> findUserByDateOfBirthBefore(Date dateOfBirth);
+
+    void encodePassword();
 }

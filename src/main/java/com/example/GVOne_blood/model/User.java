@@ -5,12 +5,11 @@ import com.example.GVOne_blood.util.UserStatus;
 import com.example.GVOne_blood.util.UserType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.*;
 
 @Entity
 
@@ -20,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table (name = "tbl_user")
-public class User extends AbstractEntity{
+public class User extends AbstractEntity<Long> implements Serializable, UserDetails {
 
     @Column(name = "first_name")
     private String firstName;
@@ -41,10 +40,10 @@ public class User extends AbstractEntity{
     private String email;
 
     @Column(name = "username")
-    private String userName;
+    private String username;
 
     @Column(name = "password")
-    private String passWord;
+    private String password;
 
     @Column(name = "phone")
     private String phone;
@@ -62,7 +61,13 @@ public class User extends AbstractEntity{
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Address> addresses = new HashSet<>();
 
+    @OneToMany(mappedBy = "user")
+    private Set<GroupHasUser> users = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<UserHasRole> roles = new HashSet<>();
     public void saveAddress(Address address){
+
         if (address != null){
             if (addresses == null)
                 addresses = new HashSet<>(); //tránh NullPointer
@@ -72,4 +77,28 @@ public class User extends AbstractEntity{
 
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

@@ -20,11 +20,11 @@ public class GlobalExceptionHandler {
             errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
 
             String message = e.getMessage();
-            if (e instanceof MethodArgumentNotValidException) {
-            message = message.substring(message.lastIndexOf('[') + 1, message.lastIndexOf(']'));}
-            else if (e instanceof HttpMessageNotReadableException) {
-                message = "Only accept the following values : " +
-                        message.substring(message.indexOf('[') + 1, message.indexOf(']'));}
+            if (e instanceof MethodArgumentNotValidException && (message.contains("[") && message.contains("]")) ) {
+            message = message.substring(message.lastIndexOf('['), message.lastIndexOf(']'));}
+            else if (e instanceof HttpMessageNotReadableException  && (message.contains("[") && message.contains("]"))) {
+
+                     message = message.substring(message.indexOf('[') + 1, message.indexOf(']'));}
             errorResponse.setMessage(message); // lấy ra lỗi ở dạng text
             errorResponse.setError(HttpStatus.BAD_REQUEST.getReasonPhrase()); // lấy ra lỗi ở dạng text (bad-request)
             errorResponse.setTimestamp( new Date());
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
         errorResponse.setMessage(message); // lấy ra lỗi ở dạng text
         errorResponse.setError(HttpStatus.BAD_GATEWAY.getReasonPhrase()); // lấy ra lỗi ở dạng text (bad-getaway)
         errorResponse.setTimestamp( new Date());
-        errorResponse.setPath(request.getDescription(false ).replace("uri=", "")); // lấy ra đường dẫn request
+        errorResponse.setPath(request.getDescription(false ).replace("url=", "")); // lấy ra đường dẫn request
         return errorResponse;
     }
 

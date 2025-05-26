@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.8</version>
+		<version>3.3.8</version> <!-- Lưu ý: 3.3.8 là một phiên bản rất cụ thể, hãy đảm bảo đây là phiên bản bạn muốn. Phiên bản GA gần đây là 3.3.0. -->
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
@@ -13,40 +13,28 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>GVOne-blood</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+	<!-- Các thẻ url, licenses, developers, scm trống đã được loại bỏ để gọn gàng hơn -->
+
 	<properties>
 		<java.version>17</java.version>
+		<jjwt.version>0.11.5</jjwt.version>
+		<springdoc.version>2.6.0</springdoc.version>
+		<modelmapper.version>3.2.0</modelmapper.version> <!-- Cập nhật ModelMapper -->
 	</properties>
+
 	<dependencies>
+		<!-- Spring Boot Starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.6.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.30</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -54,20 +42,74 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<!-- Database -->
+		<dependency>
+			<groupId>com.mysql</groupId> <!-- groupId được cập nhật cho connector mới hơn -->
+			<artifactId>mysql-connector-j</artifactId> <!-- artifactId được cập nhật -->
+			<scope>runtime</scope>
+			<!-- Phiên bản được quản lý bởi spring-boot-starter-parent -->
+		</dependency>
+
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId> <!-- hoặc jjwt-gson nếu bạn dùng Gson -->
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- API Documentation -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+
+		<!-- Utilities -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+			<!-- Phiên bản được quản lý bởi spring-boot-starter-parent -->
 		</dependency>
 		<dependency>
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
-			<version>2.3.0</version>
+			<version>${modelmapper.version}</version>
 		</dependency>
 
+		<!-- Thymeleaf Security Extras -->
 		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+			<!-- Phiên bản được quản lý bởi spring-boot-starter-parent -->
+		</dependency>
 
-			<optional>true</optional>
+		<!-- Test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>13.0</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
@@ -76,6 +118,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

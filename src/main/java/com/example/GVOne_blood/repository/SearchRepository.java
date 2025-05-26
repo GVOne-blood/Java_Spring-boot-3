@@ -67,6 +67,7 @@ public class SearchRepository {
         }
 
         Long totalElement = (Long) queryCount.getSingleResult();
+
         Page<?> page = new PageImpl<Object>(query.getResultList(),PageRequest.of(pageNo, pageSize), totalElement);
         return PageResponse.builder()
                 .pageNo(pageNo)
@@ -74,5 +75,9 @@ public class SearchRepository {
                 .totalPage(page.getTotalPages())
                 .items(page.stream().toList())
                 .build();
+    }
+
+    public PageResponse<?> advanceSearchByCriteria(int pageNo, int pageSize, String sortby, String... search){
+        return null;
     }
 }
